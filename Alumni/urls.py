@@ -7,3 +7,4 @@ urlpatterns = [
     path('', include('schools.urls')),
 
 ]
+
