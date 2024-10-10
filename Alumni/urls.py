@@ -1,7 +1,9 @@
 from django.contrib import admin
-from django.urls import path, include  # Asegúrate de importar 'include'
+from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Ruta para el panel de administración
-    path('', include('schools.urls')),  # Incluye las URLs de la aplicación "schools"
+    path('admin/', admin.site.urls),
+    path('api/users/', include('users.urls')),
+    path('', include('schools.urls')),
+
 ]
