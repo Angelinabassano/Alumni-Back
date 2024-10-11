@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
-
 from users.serializer import RPSerializer, CoderSerializer, EmpresaSerializer
 from users.validators import RPValidator, CoderValidator, EmpresaValidator
 
@@ -39,15 +38,21 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-
-        # Autenticación del usuario
         user = authenticate(email=email, password=password)
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
+
+            role = user.role
+            if role not in ['rp', 'coder', 'empresa']:
+                return Response({"error": "Rol de usuario no válido"}, status=status.HTTP_400_BAD_REQUEST)
+
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'role': role,
+                'user_id': user.id,
+                'email': user.email,
             }, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Correo o contraseña inválidos"}, status=status.HTTP_400_BAD_REQUEST)
