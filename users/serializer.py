@@ -14,7 +14,7 @@ class RPSerializer(serializers.ModelSerializer):
 
 
 class CoderSerializer(serializers.ModelSerializer):
-    rp = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='rp'))  # Relacionar con RP
+    rp = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='rp'))
 
     class Meta:
         model = User
