@@ -5,7 +5,7 @@ from .models import User
 class RPSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'role']
+        fields = ['first_name', 'last_name', 'email', 'password', 'school', 'role']
 
     def validate(self, data):
         if 'rp' not in data['role']:
