@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from cloudinary.models import CloudinaryField
+from schools.models import School
 
 
 class UserManager(BaseUserManager):
@@ -31,7 +32,8 @@ class User(AbstractUser):
     )
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    profile_picture = CloudinaryField('image', blank=True, null=True)
+    profile_picture = CloudinaryField('image', folder='user_pictures', blank=True, null=True)
+    cv = CloudinaryField('cv', folder='coder_cvs', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
     nif = models.CharField(max_length=20, unique=True, blank=True, null=True)
@@ -40,7 +42,7 @@ class User(AbstractUser):
     linkedin = models.URLField(blank=True, null=True)
     github = models.URLField(blank=True, null=True)
     rp = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='coder_rp')
-    school = models.CharField(max_length=255, blank=True, null=True)
+    school = models.ForeignKey(School, on_delete=models.SET_NULL, blank=True, null=True, related_name='users')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
