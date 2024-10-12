@@ -8,11 +8,9 @@ class RPCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'school', 'role']
+        fields = ['first_name', 'last_name', 'email', 'password', 'school']
 
     def validate(self, data):
-        if 'rp' not in data['role']:
-            raise serializers.ValidationError('El rol debe ser "rp"')
         return data
 
     def create(self, validated_data):
@@ -21,7 +19,7 @@ class RPCreateSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name'],
             email=validated_data['email'],
             school=validated_data['school'],
-            role=validated_data['role']
+            role='rp'
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -34,16 +32,14 @@ class CoderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'rp', 'role', 'school']
+        fields = ['first_name', 'last_name', 'email', 'password', 'rp', 'school']
 
     def validate(self, data):
-        if 'coder' not in data['role']:
-            raise serializers.ValidationError('El rol debe ser "coder"')
         return data
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = User(**validated_data)
+        user = User(**validated_data, role='coder')
         user.set_password(password)
         user.save()
         return user
@@ -52,16 +48,14 @@ class CoderCreateSerializer(serializers.ModelSerializer):
 class EmpresaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['company_name', 'nif', 'email', 'password', 'role']
+        fields = ['company_name', 'nif', 'email', 'password']
 
     def validate(self, data):
-        if 'empresa' not in data['role']:
-            raise serializers.ValidationError('El rol debe ser "empresa"')
         return data
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = User(**validated_data)
+        user = User(**validated_data, role='empresa')
         user.set_password(password)
         user.save()
         return user

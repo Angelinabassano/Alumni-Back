@@ -13,26 +13,16 @@ from users.models import User
 
 class UserCreateView(APIView):
     def post(self, request):
-        role = request.data.get('role')
         serializer = None
-        validator = None
 
-        if role == 'rp':
-            serializer = RPCreateSerializer(data=request.data)
-            validator = RPValidator(request.data)
-        elif role == 'coder':
-            serializer = CoderCreateSerializer(data=request.data)
-            validator = CoderValidator(request.data)
-        elif role == 'empresa':
+        if 'company_name' in request.data and 'nif' in request.data:
             serializer = EmpresaCreateSerializer(data=request.data)
-            validator = EmpresaValidator(request.data)
+        elif 'rp' in request.data:
+            serializer = CoderCreateSerializer(data=request.data)
+        elif 'school' in request.data:
+            serializer = RPCreateSerializer(data=request.data)
         else:
-            return Response({'error': 'Rol no válido'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            validator.validate()
-        except serializers.ValidationError as e:
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Datos insuficientes para determinar el rol'}, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
             user = serializer.save()
