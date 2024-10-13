@@ -1,5 +1,5 @@
 from users.serializer import RPCreateSerializer, CoderCreateSerializer, EmpresaCreateSerializer, RPUpdateSerializer, \
-    CoderUpdateSerializer, EmpresaUpdateSerializer
+    CoderUpdateSerializer, EmpresaUpdateSerializer, GetCoderSerializer, GetRPSerializer, GetEmpresaSerializer
 from users.validators import RPValidator, CoderValidator, EmpresaValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers
-from rest_framework import status
+from rest_framework import status, generics
 from users.models import User
 
 
@@ -69,6 +69,76 @@ class UserUpdateView(APIView):
         elif role == 'empresa':
             return EmpresaUpdateSerializer
         return None
+
+
+class CoderListView(generics.ListAPIView):
+    queryset = User.objects.filter(role='coder')
+    serializer_class = GetCoderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            return Response({"detail": "No hay coders disponibles"}, status=status.HTTP_204_NO_CONTENT)
+
+        fields = request.query_params.get('fields')
+        if fields:
+            fields = fields.split(',')
+            serializer = self.get_serializer(queryset, many=True)
+            filtered_data = [{field: coder[field] for field in fields if field in coder} for coder in serializer.data]
+            return Response(filtered_data, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class EmpresaListView(generics.ListAPIView):
+    queryset = User.objects.filter(role='empresa')
+    serializer_class = GetEmpresaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if not queryset.exists():
+            return Response({"detail": "No hay empresas disponibles"}, status=status.HTTP_204_NO_CONTENT)
+
+        fields = request.query_params.get('fields')
+        serializer = self.get_serializer(queryset, many=True)
+
+        if fields:
+            fields = fields.split(',')
+            filtered_data = [{field: empresa[field] for field in fields if field in empresa} for empresa in
+                             serializer.data]
+            return Response(filtered_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GetUser(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, role):
+        try:
+            user = User.objects.get(pk=pk, role=role)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        if role == 'rp':
+            serializer = GetRPSerializer(user)
+        elif role == 'coder':
+            serializer = GetCoderSerializer(user)
+        elif role == 'empresa':
+            serializer = GetEmpresaSerializer(user)
+        else:
+            return Response({"error": "Rol de usuario no válido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        fields = request.query_params.getlist('fields')
+        if fields:
+            filtered_data = {field: serializer.data.get(field) for field in fields if field in serializer.data}
+            return Response(filtered_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LoginView(APIView):

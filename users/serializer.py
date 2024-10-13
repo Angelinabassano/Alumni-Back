@@ -4,11 +4,12 @@ from schools.models import School
 
 
 class RPCreateSerializer(serializers.ModelSerializer):
-    school = serializers.PrimaryKeyRelatedField(queryset=School.objects.all())
+    school_id = serializers.PrimaryKeyRelatedField(queryset=School.objects.all(), source='school', write_only=True)
+    school_name = serializers.CharField(source='school.name', read_only=True)
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'school']
+        fields = ['first_name', 'last_name', 'email', 'password', 'school_id', 'school_name']
 
     def validate(self, data):
         return data
@@ -159,6 +160,32 @@ class EmpresaUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class GetRPSerializer(serializers.ModelSerializer):
+    school = serializers.SlugRelatedField(slug_field='name', queryset=School.objects.all(), required=False)
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture',
+                  'description', 'school']
+
+
+class GetCoderSerializer(serializers.ModelSerializer):
+    school = serializers.SlugRelatedField(slug_field='name', queryset=School.objects.all(), required=False)
+    rp = serializers.SlugRelatedField(slug_field='first_name', queryset=User.objects.filter(role='rp'), required=False)
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture',
+                  'description', 'linkedin', 'github', 'cv', 'school', 'rp']
+
+
+class GetEmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'company_name', 'nif', 'email', 'profile_picture',
+                  'description', 'phone', 'website']
 
 
 class LoginSerializer(serializers.Serializer):
