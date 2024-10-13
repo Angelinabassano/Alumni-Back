@@ -1,5 +1,5 @@
 from users.serializer import RPCreateSerializer, CoderCreateSerializer, EmpresaCreateSerializer, RPUpdateSerializer, \
-    CoderUpdateSerializer, EmpresaUpdateSerializer, GetCoderSerializer, GetRPSerializer, GetEmpresaSerializer
+    CoderUpdateSerializer, EmpresaUpdateSerializer, GetCoderSerializer, GetRPSerializer, GetEmpresaSerializer, RPDeleteSerializer, CoderDeleteSerializer, EmpresaDeleteSerializer
 from users.validators import RPValidator, CoderValidator, EmpresaValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -139,6 +139,30 @@ class GetUser(APIView):
             return Response(filtered_data, status=status.HTTP_200_OK)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        global serializer
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.role == 'rp':
+            serializer = GetRPSerializer(user)
+        elif user.role == 'coder':
+            serializer = GetCoderSerializer(user)
+        elif user.role == 'empresa':
+            serializer = GetEmpresaSerializer(user)
+
+        user.delete()
+        return Response({
+            "message": "Usuario eliminado exitosamente",
+            "deleted_user": serializer.data
+        }, status=status.HTTP_204_NO_CONTENT)
 
 
 class LoginView(APIView):
