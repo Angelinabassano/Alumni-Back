@@ -1,6 +1,7 @@
 import django_filters
 from .models import Coder, Skill
 
+
 class CoderFilter(django_filters.FilterSet):
     front_end_skills = django_filters.ModelMultipleChoiceFilter(
         queryset=Skill.objects.all(),

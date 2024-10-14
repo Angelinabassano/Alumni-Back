@@ -4,3 +4,8 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=password
 DB_NAME=Alumni
+CLOUDINARY_CLOUD_NAME=<tu-cloud-name>
+CLOUDINARY_API_KEY=<tu-api-key>
+CLOUDINARY_API_SECRET=<tu-api-secret>
+
+
